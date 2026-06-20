@@ -1,65 +1,109 @@
-import Image from "next/image";
+"use client";
+import Silk from "@/components/Silk";
+import CardNav, { CardNavItem } from "@/components/CardNav";
+import ScrambledText from "@/components/ScrambledText";
+import RotatingText from "@/components/RotatingText";
+import ClickSpark from "@/components/ClickSpark";
 
 export default function Home() {
+  const handleAnimationComplete = () => {
+    console.log('All letters have animated!');
+  };
+
+  const navItems: CardNavItem[] = [
+    {
+      label: 'Products',
+      bgColor: '#1C1C1F',
+      textColor: '#FAFAFA',
+      links: [
+        { label: 'Overview', href: '#overview', ariaLabel: 'Overview' },
+        { label: 'Pricing', href: '#pricing', ariaLabel: 'Pricing' }
+      ]
+    },
+    {
+      label: 'Integrations',
+      bgColor: '#1C1C1F',
+      textColor: '#FAFAFA',
+      links: [
+        { label: 'API', href: '#api', ariaLabel: 'API' },
+        { label: 'Partners', href: '#partners', ariaLabel: 'Partners' }
+      ]
+    },
+    {
+      label: 'Company',
+      bgColor: '#1C1C1F',
+      textColor: '#FAFAFA',
+      links: [
+        { label: 'About', href: '#about', ariaLabel: 'About' },
+        { label: 'Careers', href: '#careers', ariaLabel: 'Careers' }
+      ]
+    }
+  ];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <ClickSpark sparkColor="#FAFAFA" sparkCount={12} duration={500}>
+      <div className="relative w-screen min-h-screen overflow-hidden text-text-primary">
+        <div className="absolute inset-0 -z-10">
+          <Silk speed={5} scale={1} color="#3F3F46" noiseIntensity={1.2} rotation={0} />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+
+        {/* Nav */}
+        <CardNav logo="/only_logo.png" items={navItems} baseColor="rgba(255, 255, 255, 0.1)" menuColor="#FAFAFA" buttonBgColor="#FAFAFA" buttonTextColor="#0A0A0B" />
+
+        {/* Hero */}
+        <main className="relative z-10 flex flex-col items-center justify-center w-full max-w-4xl mx-auto py-28 px-6 text-center top-5">
+          <h1 className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-4 text-4xl md:text-6xl font-extrabold tracking-tight mb-6 text-text-primary  text-center">
+            <span>Build your future,</span>
+            <RotatingText
+              texts={["faster.", "smarter.", "today."]}
+              mainClassName="px-3 md:px-4 bg-white text-black overflow-hidden py-1 md:py-2 rounded-lg"
+              staggerFrom="last"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "-120%" }}
+              staggerDuration={0.025}
+              splitLevelClassName="overflow-hidden pb-1"
+              transition={{ type: "spring", damping: 30, stiffness: 400 }}
+              rotationInterval={2000}
+              splitBy="characters"
+              auto
+              loop
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+          </h1>
+
+          <ScrambledText className="max-w-2xl mx-auto text-lg md:text-xl text-text-primary/80">
+            Introducing Job Hunter V2 — an AI-assisted SaaS to streamline job searches, organize applications, and optimize outreach with data-driven templates.
+          </ScrambledText>
+
+          <div className="mt-8 flex justify-center w-full">
+            <button
+              type="button"
+              className="relative z-10 rounded-full px-8 py-3 bg-card text-text-disabled font-semibold shadow-lg hover:bg-gray-200 transition focus:outline-none focus:ring-4 focus:ring-white/30 text-black"
+              onClick={() => console.log('CTA clicked')}
+            >
+              Get Started — It's Free
+            </button>
+          </div>
+
+          <div className="mt-14 w-full">
+            {/* Three feature cards as simple placeholders */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-6 rounded-lg bg-white/10 backdrop-blur-md border border-white/10 text-text-primary shadow-xl">
+                <h3 className="font-semibold mb-2">Applicant Tracking</h3>
+                <p className="text-sm text-text-primary/70">Keep all roles, notes, and contacts in one place.</p>
+              </div>
+              <div className="p-6 rounded-lg bg-white/10 backdrop-blur-md border border-white/10 text-text-primary shadow-xl">
+                <h3 className="font-semibold mb-2">Smart Templates</h3>
+                <p className="text-sm text-text-primary/70">AI-tailored outreach templates with A/B testing.</p>
+              </div>
+              <div className="p-6 rounded-lg bg-white/10 backdrop-blur-md border border-white/10 text-text-primary shadow-xl">
+                <h3 className="font-semibold mb-2">Analytics</h3>
+                <p className="text-sm text-text-primary/70">Measure response rates and optimize workflows.</p>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </ClickSpark>
   );
 }
