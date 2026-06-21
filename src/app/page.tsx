@@ -89,7 +89,7 @@ export default function Home() {
             <button
               type="button"
               className="relative z-10 rounded-full px-8 py-3 bg-card text-text-disabled font-semibold shadow-lg hover:bg-gray-200 transition focus:outline-none focus:ring-4 focus:ring-white/30 text-black"
-              onClick={() => router.push('/login')}
+              onClick={() => router.push('/dashboard')}
             >
               Get Started — It's Free
             </button>
