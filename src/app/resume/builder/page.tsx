@@ -35,8 +35,8 @@ export default function ResumeBuilderPage() {
       try {
         const userData = await userService.currentUser();
         setUser(userData);
-        const resumeData = await resumeService.getResumes();
-        setResumes(resumeData.resumes || []);
+        const resumeData = await resumeService.getResumeByUserId();
+        setResumes(resumeData ? [resumeData] : []);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -164,10 +164,10 @@ export default function ResumeBuilderPage() {
                           ))}
                         </div>
                       )}
-                      {selectedResume.projects.length > 0 && (
+                      {selectedResume.projectName.length > 0 && (
                         <div>
                           <h2 className="font-semibold mb-2">Projects</h2>
-                          {selectedResume.projects.map((proj, i) => (
+                          {selectedResume.projectName.map((proj: any, i: number) => (
                             <div key={i} className="mb-2">
                               <div className="font-medium">{proj.projectName}</div>
                               <p className="text-sm text-muted-foreground">{proj.description}</p>

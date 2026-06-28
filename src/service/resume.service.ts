@@ -4,17 +4,17 @@ import axiosInstance from "./axiosInstance";
 import { toast } from "sonner";
 
 class ResumeService {
-  async getResumes(): Promise<IResumeListResponse> {
+  async getResumeByUserId(): Promise<IResumeResponse | null> {
     try {
-      const response = await axiosInstance.get<IResumeListResponse>("/v2/resumes");
-      return response.data;
+      const response = await axiosInstance.get("/v2/resumes/resumeByUser");
+      return response.data ?? null;
     } catch (error) {
       toast.error("Failed to fetch resumes");
       throw error;
     }
   }
 
-  async getResume(id: string): Promise<IResumeResponse> {
+  async getResumeByResumeId(id: string): Promise<IResumeResponse> {
     try {
       const response = await axiosInstance.get<IResumeResponse>(`/v2/resumes/get/${id}`);
       return response.data;

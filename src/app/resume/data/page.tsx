@@ -16,9 +16,10 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import AuthGuard from "@/components/AuthGuard";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { IUserResponse } from "@/interface/response/user.response";
 import { IResumeCreateRequest } from "@/interface/request/resume.request";
+import { IResumeResponse } from "@/interface/response/resume.response";
 import userService from "@/service/user.service";
 import resumeService from "@/service/resume.service";
 import { Button } from "@/components/ui/button";
@@ -102,10 +103,58 @@ function toDateOrUndefined(val: string | undefined): Date | undefined {
   return val ? new Date(val) : undefined;
 }
 
+function dateToString(val: Date | string | undefined): string {
+  if (!val) return "";
+  const d = typeof val === "string" ? new Date(val) : val;
+  return isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
+}
+
+function resumeToFormData(resume: IResumeResponse): FormData {
+  return {
+    name: resume.name || "",
+    phNumber: resume.phNumber || "",
+    emailId: resume.emailId || "",
+    portfolioLink: resume.portfolioLink || "",
+    linkedinLink: resume.linkedinLink || "",
+    githubLink: resume.githubLink || "",
+    summary: resume.summary || "",
+    skills: resume.skills || [],
+    projects: (resume.projectName || []).map((p) => ({
+      projectName: p.projectName || "",
+      description: p.description || "",
+      techStack: p.techStack || [],
+      projectLink: p.projectLink || "",
+      githubLink: p.githubLink || "",
+      startDate: dateToString(p.startDate),
+      endDate: dateToString(p.endDate),
+    })),
+    education: (resume.education || []).map((e) => ({
+      instituteName: e.instituteName || "",
+      degree: e.degree || "",
+      fieldOfStudy: e.fieldOfStudy || "",
+      startDate: dateToString(e.startDate),
+      endDate: dateToString(e.endDate),
+      grade: e.grade || "",
+    })),
+    experience: (resume.experience || []).map((e) => ({
+      companyName: e.companyName || "",
+      designation: e.designation || "",
+      startDate: dateToString(e.startDate),
+      endDate: dateToString(e.endDate),
+      isCurrent: e.isCurrent || false,
+      description: e.description || "",
+      techStack: e.techStack || [],
+    })),
+  };
+}
+
 export default function ResumeDataPage() {
   const router = useRouter();
   const [user, setUser] = useState<IUserResponse | null>(null);
+  const [existingResume, setExistingResume] = useState<IResumeResponse | null>(null);
+  const [allowEditing, setAllowEditing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const originalFormRef = useRef<FormData | null>(null);
   const [expandedSections, setExpandedSections] = useState({
     basic: true,
     projects: false,
@@ -129,8 +178,32 @@ export default function ResumeDataPage() {
 
   const [skillsInput, setSkillsInput] = useState("");
 
+  const isReadonly = existingResume !== null && !allowEditing;
+
+  const hasChanges = useMemo(() => {
+    if (!originalFormRef.current) return false;
+    return JSON.stringify(form) !== JSON.stringify(originalFormRef.current);
+  }, [form]);
+
   useEffect(() => {
-    userService.currentUser().then(setUser).catch(console.error);
+    const fetchData = async () => {
+      try {
+        const userData = await userService.currentUser();
+        setUser(userData);
+        
+        const resume = await resumeService.getResumeByUserId();
+        if (resume) {
+          setExistingResume(resume);
+          const formData = resumeToFormData(resume);
+          setForm(formData);
+          originalFormRef.current = formData;
+          setAllowEditing(false);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchData();
   }, []);
 
   const updateField = useCallback(<K extends keyof FormData>(key: K, value: FormData[K]) => {
@@ -261,10 +334,14 @@ export default function ResumeDataPage() {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      await resumeService.createResume(payload);
-      // router.push("/resume/builder");
+      if (existingResume && allowEditing) {
+        await resumeService.updateResume(existingResume.id, payload);
+      } else {
+        await resumeService.createResume(payload);
+      }
+      router.push("/resume/builder");
     } catch (error) {
-      console.error("Error creating resume:", error);
+      console.error("Error saving resume:", error);
     } finally {
       setSubmitting(false);
     }
@@ -316,6 +393,7 @@ export default function ResumeDataPage() {
                         value={form.name}
                         onChange={(e) => updateField("name", e.target.value)}
                         placeholder="John Doe"
+                        disabled={isReadonly}
                       />
                     </div>
                     <div className="space-y-2">
@@ -325,6 +403,7 @@ export default function ResumeDataPage() {
                         value={form.phNumber}
                         onChange={(e) => updateField("phNumber", e.target.value)}
                         placeholder="+1 234 567 8900"
+                        disabled={isReadonly}
                       />
                     </div>
                     <div className="space-y-2">
@@ -335,11 +414,13 @@ export default function ResumeDataPage() {
                         value={form.emailId}
                         onChange={(e) => updateField("emailId", e.target.value)}
                         placeholder="john@example.com"
+                        disabled={isReadonly}
                       />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Portfolio Link</label>
                       <Input
+                        disabled={isReadonly}
                         value={form.portfolioLink || ""}
                         onChange={(e) => updateField("portfolioLink", e.target.value)}
                         placeholder="https://portfolio.dev"
@@ -348,6 +429,7 @@ export default function ResumeDataPage() {
                     <div className="space-y-2">
                       <label className="text-sm font-medium">LinkedIn</label>
                       <Input
+                        disabled={isReadonly}
                         value={form.linkedinLink || ""}
                         onChange={(e) => updateField("linkedinLink", e.target.value)}
                         placeholder="https://linkedin.com/in/johndoe"
@@ -356,6 +438,7 @@ export default function ResumeDataPage() {
                     <div className="space-y-2">
                       <label className="text-sm font-medium">GitHub</label>
                       <Input
+                        disabled={isReadonly}
                         value={form.githubLink || ""}
                         onChange={(e) => updateField("githubLink", e.target.value)}
                         placeholder="https://github.com/johndoe"
@@ -369,18 +452,20 @@ export default function ResumeDataPage() {
                       value={form.summary || ""}
                       onChange={(e) => updateField("summary", e.target.value)}
                       placeholder="Brief professional summary..."
+                        disabled={isReadonly}
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Skills</label>
                     <div className="flex gap-2">
                       <Input
+                        disabled={isReadonly}
                         value={skillsInput}
                         onChange={(e) => setSkillsInput(e.target.value)}
                         onKeyDown={handleSkillsKeyDown}
                         placeholder="Type a skill and press Enter"
                       />
-                      <Button type="button" variant="outline" onClick={handleAddSkill}>Add</Button>
+                      <Button type="button" variant="outline" onClick={handleAddSkill} disabled={isReadonly}>Add</Button>
                     </div>
                     {form.skills && form.skills.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-2">
@@ -390,7 +475,7 @@ export default function ResumeDataPage() {
                             className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
                           >
                             {skill}
-                            <button type="button" onClick={() => handleRemoveSkill(skill)} className="hover:text-destructive">
+                            <button type="button" onClick={() => handleRemoveSkill(skill)} className="hover:text-destructive" disabled={isReadonly}>
                               <Trash2Icon className="h-3 w-3" />
                             </button>
                           </span>
@@ -410,6 +495,7 @@ export default function ResumeDataPage() {
                         type="button"
                         onClick={() => removeProject(index)}
                         className="absolute top-2 right-2 text-destructive hover:text-destructive/80"
+                        disabled={isReadonly}
                       >
                         <Trash2Icon className="h-4 w-4" />
                       </button>
@@ -417,6 +503,7 @@ export default function ResumeDataPage() {
                         <div className="space-y-1">
                           <label className="text-xs font-medium">Project Name *</label>
                           <Input
+                            disabled={isReadonly}
                             required
                             value={project.projectName}
                             onChange={(e) => updateProject(index, "projectName", e.target.value)}
@@ -426,6 +513,7 @@ export default function ResumeDataPage() {
                         <div className="space-y-1">
                           <label className="text-xs font-medium">Tech Stack (comma separated)</label>
                           <Input
+                            disabled={isReadonly}
                             value={project.techStack?.join(", ") || ""}
                             onChange={(e) => updateProject(index, "techStack", e.target.value.split(",").map((s) => s.trim()))}
                             placeholder="React, Node.js, PostgreSQL"
@@ -434,6 +522,7 @@ export default function ResumeDataPage() {
                         <div className="space-y-1">
                           <label className="text-xs font-medium">Project Link</label>
                           <Input
+                            disabled={isReadonly}
                             value={project.projectLink || ""}
                             onChange={(e) => updateProject(index, "projectLink", e.target.value)}
                             placeholder="https://..."
@@ -442,6 +531,7 @@ export default function ResumeDataPage() {
                         <div className="space-y-1">
                           <label className="text-xs font-medium">GitHub Link</label>
                           <Input
+                            disabled={isReadonly}
                             value={project.githubLink || ""}
                             onChange={(e) => updateProject(index, "githubLink", e.target.value)}
                             placeholder="https://github.com/..."
@@ -450,6 +540,7 @@ export default function ResumeDataPage() {
                         <div className="space-y-1">
                           <label className="text-xs font-medium">Start Date</label>
                           <Input
+                            disabled={isReadonly}
                             type="date"
                             value={project.startDate || ""}
                             onChange={(e) => updateProject(index, "startDate", e.target.value)}
@@ -458,6 +549,7 @@ export default function ResumeDataPage() {
                         <div className="space-y-1">
                           <label className="text-xs font-medium">End Date</label>
                           <Input
+                            disabled={isReadonly}
                             type="date"
                             value={project.endDate || ""}
                             onChange={(e) => updateProject(index, "endDate", e.target.value)}
@@ -471,11 +563,12 @@ export default function ResumeDataPage() {
                           value={project.description || ""}
                           onChange={(e) => updateProject(index, "description", e.target.value)}
                           placeholder="Project description..."
+                            disabled={isReadonly}
                         />
                       </div>
                     </div>
                   ))}
-                  <Button type="button" variant="outline" onClick={addProject} className="w-full">
+                  <Button type="button" variant="outline" onClick={addProject} className="w-full" disabled={isReadonly}>
                     <PlusIcon className="mr-2 h-4 w-4" /> Add Project
                   </Button>
                 </div>
@@ -490,6 +583,7 @@ export default function ResumeDataPage() {
                         type="button"
                         onClick={() => removeEducation(index)}
                         className="absolute top-2 right-2 text-destructive hover:text-destructive/80"
+                            disabled={isReadonly}
                       >
                         <Trash2Icon className="h-4 w-4" />
                       </button>
@@ -497,6 +591,7 @@ export default function ResumeDataPage() {
                         <div className="space-y-1">
                           <label className="text-xs font-medium">Institute *</label>
                           <Input
+                            disabled={isReadonly}
                             required
                             value={edu.instituteName}
                             onChange={(e) => updateEducation(index, "instituteName", e.target.value)}
@@ -506,6 +601,7 @@ export default function ResumeDataPage() {
                         <div className="space-y-1">
                           <label className="text-xs font-medium">Degree *</label>
                           <Input
+                            disabled={isReadonly}
                             required
                             value={edu.degree}
                             onChange={(e) => updateEducation(index, "degree", e.target.value)}
@@ -515,6 +611,7 @@ export default function ResumeDataPage() {
                         <div className="space-y-1">
                           <label className="text-xs font-medium">Field of Study</label>
                           <Input
+                            disabled={isReadonly}
                             value={edu.fieldOfStudy || ""}
                             onChange={(e) => updateEducation(index, "fieldOfStudy", e.target.value)}
                             placeholder="Computer Science"
@@ -523,6 +620,7 @@ export default function ResumeDataPage() {
                         <div className="space-y-1">
                           <label className="text-xs font-medium">Grade</label>
                           <Input
+                            disabled={isReadonly}
                             value={edu.grade || ""}
                             onChange={(e) => updateEducation(index, "grade", e.target.value)}
                             placeholder="GPA / Percentage"
@@ -531,6 +629,7 @@ export default function ResumeDataPage() {
                         <div className="space-y-1">
                           <label className="text-xs font-medium">Start Date</label>
                           <Input
+                            disabled={isReadonly}
                             type="date"
                             value={edu.startDate || ""}
                             onChange={(e) => updateEducation(index, "startDate", e.target.value)}
@@ -539,6 +638,7 @@ export default function ResumeDataPage() {
                         <div className="space-y-1">
                           <label className="text-xs font-medium">End Date</label>
                           <Input
+                            disabled={isReadonly}
                             type="date"
                             value={edu.endDate || ""}
                             onChange={(e) => updateEducation(index, "endDate", e.target.value)}
@@ -547,7 +647,7 @@ export default function ResumeDataPage() {
                       </div>
                     </div>
                   ))}
-                  <Button type="button" variant="outline" onClick={addEducation} className="w-full">
+                  <Button type="button" variant="outline" onClick={addEducation} className="w-full" disabled={isReadonly}>
                     <PlusIcon className="mr-2 h-4 w-4" /> Add Education
                   </Button>
                 </div>
@@ -562,6 +662,7 @@ export default function ResumeDataPage() {
                         type="button"
                         onClick={() => removeExperience(index)}
                         className="absolute top-2 right-2 text-destructive hover:text-destructive/80"
+                            disabled={isReadonly}
                       >
                         <Trash2Icon className="h-4 w-4" />
                       </button>
@@ -569,6 +670,7 @@ export default function ResumeDataPage() {
                         <div className="space-y-1">
                           <label className="text-xs font-medium">Company *</label>
                           <Input
+                            disabled={isReadonly}
                             required
                             value={exp.companyName}
                             onChange={(e) => updateExperience(index, "companyName", e.target.value)}
@@ -578,6 +680,7 @@ export default function ResumeDataPage() {
                         <div className="space-y-1">
                           <label className="text-xs font-medium">Designation *</label>
                           <Input
+                            disabled={isReadonly}
                             required
                             value={exp.designation}
                             onChange={(e) => updateExperience(index, "designation", e.target.value)}
@@ -587,6 +690,7 @@ export default function ResumeDataPage() {
                         <div className="space-y-1">
                           <label className="text-xs font-medium">Start Date</label>
                           <Input
+                            disabled={isReadonly}
                             type="date"
                             required
                             value={exp.startDate || ""}
@@ -599,12 +703,13 @@ export default function ResumeDataPage() {
                             type="date"
                             value={exp.endDate || ""}
                             onChange={(e) => updateExperience(index, "endDate", e.target.value)}
-                            disabled={exp.isCurrent}
+                            disabled={isReadonly || exp.isCurrent}
                           />
                         </div>
                         <div className="space-y-1">
                           <label className="text-xs font-medium">Tech Stack (comma separated)</label>
                           <Input
+                            disabled={isReadonly}
                             value={exp.techStack?.join(", ") || ""}
                             onChange={(e) => updateExperience(index, "techStack", e.target.value.split(",").map((s) => s.trim()))}
                             placeholder="React, Node.js"
@@ -617,6 +722,7 @@ export default function ResumeDataPage() {
                               checked={exp.isCurrent || false}
                               onChange={(e) => updateExperience(index, "isCurrent", e.target.checked)}
                               className="h-4 w-4 rounded border-gray-300"
+                            disabled={isReadonly}
                             />
                             <span className="text-sm">Currently working here</span>
                           </label>
@@ -629,21 +735,44 @@ export default function ResumeDataPage() {
                           value={exp.description || ""}
                           onChange={(e) => updateExperience(index, "description", e.target.value)}
                           placeholder="Job description..."
+                            disabled={isReadonly}
                         />
                       </div>
                     </div>
                   ))}
-                  <Button type="button" variant="outline" onClick={addExperience} className="w-full">
+                  <Button type="button" variant="outline" onClick={addExperience} className="w-full" disabled={isReadonly}>
                     <PlusIcon className="mr-2 h-4 w-4" /> Add Experience
                   </Button>
                 </div>
               )}
 
               <div className="flex justify-end gap-4 pb-8">
-                <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
-                <Button type="submit" disabled={submitting}>
-                  {submitting ? "Saving..." : "Save Resume"}
-                </Button>
+                {!existingResume && (
+                  <>
+                    <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
+                    <Button type="submit" disabled={submitting}>
+                      {submitting ? "Saving..." : "Save"}
+                    </Button>
+                  </>
+                )}
+                {existingResume && !allowEditing && (
+                  <Button type="button" onClick={() => setAllowEditing(true)}>
+                    Edit
+                  </Button>
+                )}
+                {existingResume && allowEditing && (
+                  <>
+                    <Button type="button" variant="outline" onClick={() => {
+                      setForm(originalFormRef.current!);
+                      setAllowEditing(false);
+                    }}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={submitting || !hasChanges}>
+                      {submitting ? "Updating..." : "Update"}
+                    </Button>
+                  </>
+                )}
               </div>
             </form>
           </div>
