@@ -16,45 +16,29 @@ import {
 } from "@/components/ui/sidebar"
 import { TerminalSquareIcon, BotIcon, BookOpenIcon, Settings2Icon } from "lucide-react"
 import Image from "next/image"
+import { IUserResponse } from "@/interface/response/user.response"
 
 // This is sample data.
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
-      title: "Jobs Details",
+      title: "Jobs",
       url: "#",
       icon: <TerminalSquareIcon />,
       isActive: true,
       items: [
-        { title: "History", url: "#" },
-        { title: "Starred", url: "#" },
-        { title: "Settings", url: "#" },
+        { title: "All Jobs", url: "/alljobs" },
+        // { title: "Starred", url: "#" },
+        // { title: "Settings", url: "#" },
       ],
     },
     {
-      title: "Resume Data",
+      title: "Resume",
       url: "#",
       icon: <BotIcon />,
       items: [
-        { title: "Genesis", url: "#" },
-        { title: "Explorer", url: "#" },
-        { title: "Quantum", url: "#" },
-      ],
-    },
-    {
-      title: "Resume Builder",
-      url: "#",
-      icon: <BookOpenIcon />,
-      items: [
-        { title: "Introduction", url: "#" },
-        { title: "Get Started", url: "#" },
-        { title: "Tutorials", url: "#" },
-        { title: "Changelog", url: "#" },
+        { title: "Resume Data", url: "/resume/data" },
+        { title: "Resume Builder", url: "/resume/builder" },
       ],
     },
     {
@@ -82,7 +66,7 @@ const data = {
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ userData, ...props }: React.ComponentProps<typeof Sidebar> & { userData: IUserResponse | null }) {
   const { state } = useSidebar()
 
   return (
@@ -99,7 +83,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={userData} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

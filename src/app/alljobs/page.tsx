@@ -15,7 +15,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import AuthGuard from '@/components/AuthGuard'
-import DashboardMetrics from '@/components/DashboardMetrics'
+import JobCards from '@/components/JobCards'
 import { useState, useEffect } from "react"
 import { IUserResponse } from "@/interface/response/user.response"
 import userService from "@/service/user.service"
@@ -36,13 +36,9 @@ export default function Page() {
     fetchUser();
   }, [])
 
-  console.log(user);
-
-
   return (
     <AuthGuard>
       <SidebarProvider>
-        {/* <DarkVeil /> */}
         <AppSidebar userData={user} />
         <SidebarInset>
           <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
@@ -55,20 +51,22 @@ export default function Page() {
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="#">
-                      Job Hunter
+                    <BreadcrumbLink href="/dashboard">
+                      Dashboard
                     </BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
                   <BreadcrumbItem>
-                    <BreadcrumbPage>Dashboard</BreadcrumbPage>
+                    <BreadcrumbPage>All Jobs</BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
             </div>
           </header>
           <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-            <DashboardMetrics user={user} />
+            <div className="flex-1">
+              <JobCards />
+            </div>
           </div>
         </SidebarInset>
       </SidebarProvider>

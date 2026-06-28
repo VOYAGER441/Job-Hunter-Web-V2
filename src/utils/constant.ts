@@ -1,3 +1,10 @@
+// ####################### job source ########################
+export enum JOB_SOURCE {
+   REMOTEOK = "remoteok",
+   MUSE = "muse"
+}
+
+// ####################### theme ########################
 export const theme = {
     colors: {
         base: "#0A0A0B",
