@@ -3,6 +3,8 @@ import { IProject, IEducation, IExperience } from "@/interface/request/resume.re
 export interface IResumeResponse {
   id: string;
   userId: string;
+  fileKey: string;
+  publicUrl: string;
   name: string;
   phNumber: string;
   emailId: string;

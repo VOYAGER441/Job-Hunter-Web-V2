@@ -55,6 +55,27 @@ class ResumeService {
       throw error;
     }
   }
+
+  async buildWithAI(id: string): Promise<string> {
+    try {
+      const response = await axiosInstance.post(`/v2/resumes/build`);
+      return response.data;
+    } catch (error) {
+      toast.error("Failed to build resume with AI");
+      throw error;
+    }
+  }
+
+  async updateResumeHtml(id: string, html: string): Promise<IResumeResponse> {
+    try {
+      const response = await axiosInstance.put(`/v2/resumes/finalBuild`, { html });
+      toast.success("Resume updated and PDF generated");
+      return response.data;
+    } catch (error) {
+      toast.error("Failed to update resume HTML");
+      throw error;
+    }
+  }
 }
 
 export default new ResumeService();
