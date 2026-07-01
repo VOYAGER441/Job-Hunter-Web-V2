@@ -14,53 +14,65 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { TerminalSquareIcon, BotIcon, BookOpenIcon, Settings2Icon } from "lucide-react"
+import { TerminalSquareIcon, BotIcon, BookOpenIcon, BrainCircuit, UserRoundPen, Receipt } from "lucide-react"
 import Image from "next/image"
 import { IUserResponse } from "@/interface/response/user.response"
+
+const isCurrentPath = (path: string) => {
+  if (typeof window !== "undefined") {
+    return window.location.pathname === path
+  }
+  return false
+}
 
 // This is sample data.
 const data = {
   navMain: [
     {
       title: "Jobs",
-      url: "#",
+      url: "/alljobs",
       icon: <TerminalSquareIcon />,
-      isActive: true,
+      isActive: isCurrentPath("/alljobs"),
       items: [
-        { title: "All Jobs", url: "/alljobs" },
-        // { title: "Starred", url: "#" },
-        // { title: "Settings", url: "#" },
+        { title: "All Jobs", url: "/alljobs" , isActive: isCurrentPath("/alljobs") },
       ],
     },
     {
       title: "Resume",
-      url: "#",
+      url: "/resume/data",
       icon: <BotIcon />,
+      isActive: isCurrentPath("/resume/data") || isCurrentPath("/resume/builder"),
       items: [
-        { title: "Resume Data", url: "/resume/data" },
-        { title: "Resume Builder", url: "/resume/builder" },
+        { title: "Resume Data", url: "/resume/data", isActive: isCurrentPath("/resume/data") },
+        { title: "Resume Builder", url: "/resume/builder", isActive: isCurrentPath("/resume/builder") },
       ],
     },
     {
-      title: "Auto Apply",
+      title: "Auto Apply With AI",
       url: "#",
-      icon: <Settings2Icon />,
+      isActive: isCurrentPath("/auto-apply"),
+      icon: <BrainCircuit />,
       items: [
-        { title: "General", url: "#" },
-        { title: "Team", url: "#" },
-        { title: "Billing", url: "#" },
-        { title: "Limits", url: "#" },
+        { title: "My Jobs", url: "", isActive: isCurrentPath("/auto-apply/my-jobs") },
+        { title: "Any Job Link", url: "#", isActive: isCurrentPath("/auto-apply/any-job-link") },
       ],
     },
+    // {
+    //   title: "Profile Settings",
+    //   url: "#",
+    //   isActive: isCurrentPath("/profile-settings"),
+    //   icon: <UserRoundPen />,
+    //   items: [
+    //     { title: "General", url: "#", isActive: isCurrentPath("/profile-settings/general") }
+    //   ],
+    // },
     {
-      title: "Profile Settings",
+      title: "Plan & Billing",
       url: "#",
-      icon: <Settings2Icon />,
+      isActive: isCurrentPath("/plan-billing"),
+      icon: <Receipt />,
       items: [
-        { title: "General", url: "#" },
-        { title: "Team", url: "#" },
-        { title: "Billing", url: "#" },
-        { title: "Limits", url: "#" },
+        { title: "General", url: "#", isActive: isCurrentPath("/plan-billing/general") }
       ],
     },
   ],

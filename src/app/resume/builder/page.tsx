@@ -138,6 +138,15 @@ export default function ResumeBuilderPage() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (!isEditingHtml) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isEditingHtml]);
+
   const handleBuildAI = async () => {
     if (!selectedResume) return;
     setBuildingAI(true);
@@ -155,9 +164,8 @@ export default function ResumeBuilderPage() {
   const handleSaveHtml = useCallback(
     async (html: string) => {
       if (!selectedResume) return;
-      const updatedResume = await resumeService.updateResumeHtml(selectedResume.id, html);
-      setSelectedResume(updatedResume);
-      setIsEditingHtml(false);
+      await resumeService.updateResumeHtml(selectedResume.id, html);
+      window.location.reload();
     },
     [selectedResume]
   );

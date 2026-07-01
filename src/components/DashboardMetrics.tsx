@@ -10,10 +10,6 @@ import { IUserResponse } from "@/interface/response/user.response";
 
 Chart.register(...registerables);
 
-const CREDIT_MAX = 500;
-const RESUME_MAX = 30;
-const AUTO_MAX = 100;
-
 function useCountUp(target: number, duration = 900) {
   const ref = useRef<HTMLSpanElement>(null);
   useEffect(() => {
@@ -33,7 +29,7 @@ function useCountUp(target: number, duration = 900) {
 interface StatCardProps {
   label: string;
   value: number;
-  max: number;
+  max?: number;
   icon: React.ReactNode;
   barColor: string;
   delta?: string;
@@ -45,7 +41,7 @@ function StatCard({ label, value, max, icon, barColor, delta, badge }: StatCardP
   const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!barRef.current) return;
+    if (!barRef.current || max === undefined) return;
     const pct = Math.min(Math.round((value / max) * 100), 100);
     let start: number | null = null;
     const step = (ts: number) => {
@@ -75,15 +71,17 @@ function StatCard({ label, value, max, icon, barColor, delta, badge }: StatCardP
       <div>
         <p className="text-xs text-neutral-500 mb-1">{label}</p>
         <span ref={valRef} className="text-3xl font-semibold text-white">0</span>
-        <span className="text-sm text-neutral-500 ml-1">/ {max}</span>
+        {max !== undefined && <span className="text-sm text-neutral-500 ml-1">/ {max}</span>}
       </div>
-      <div className="h-1.5 rounded-full bg-neutral-800 overflow-hidden">
-        <div
-          ref={barRef}
-          style={{ width: "0%", background: barColor, transition: "none" }}
-          className="h-full rounded-full"
-        />
-      </div>
+      {max !== undefined && (
+        <div className="h-1.5 rounded-full bg-neutral-800 overflow-hidden">
+          <div
+            ref={barRef}
+            style={{ width: "0%", background: barColor, transition: "none" }}
+            className="h-full rounded-full"
+          />
+        </div>
+      )}
       {delta && (
         <p className="text-xs text-emerald-400 flex items-center gap-1">
           <TrendingUp className="w-3 h-3" />
@@ -170,11 +168,10 @@ function ActivityChart() {
   );
 }
 
-function CreditDonut({ credits }: { credits: number }) {
+function CreditDonut({ credits, creditsUsed }: { credits: number; creditsUsed: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const chartRef = useRef<Chart | null>(null);
-  const resumeCredits = 90, applyCredits = 70;
-  const remaining = credits;
+  const remaining = credits - creditsUsed;
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -182,10 +179,10 @@ function CreditDonut({ credits }: { credits: number }) {
     chartRef.current = new Chart(canvasRef.current, {
       type: "doughnut",
       data: {
-        labels: ["Resumes", "Applies", "Remaining"],
+        labels: ["Used", "Remaining"],
         datasets: [{
-          data: [resumeCredits, applyCredits, remaining],
-          backgroundColor: ["#10b981", "#818cf8", "#262626"],
+          data: [creditsUsed, remaining],
+          backgroundColor: ["#818cf8", "#262626"],
           borderWidth: 0,
           hoverOffset: 6,
         }],
@@ -198,7 +195,7 @@ function CreditDonut({ credits }: { credits: number }) {
       },
     });
     return () => { chartRef.current?.destroy(); };
-  }, [credits]);
+  }, [credits, creditsUsed]);
 
   return (
     <motion.div
@@ -214,12 +211,8 @@ function CreditDonut({ credits }: { credits: number }) {
         </div>
         <div className="flex flex-col gap-2 text-[12px]">
           <span className="flex items-center gap-2 text-neutral-400">
-            <span className="w-2 h-2 rounded-sm bg-emerald-500 inline-block" />
-            Resumes <span className="text-white font-medium ml-auto">{resumeCredits}</span>
-          </span>
-          <span className="flex items-center gap-2 text-neutral-400">
             <span className="w-2 h-2 rounded-sm bg-indigo-400 inline-block" />
-            Applies <span className="text-white font-medium ml-auto">{applyCredits}</span>
+            Used <span className="text-white font-medium ml-auto">{creditsUsed}</span>
           </span>
           <span className="flex items-center gap-2 text-neutral-400">
             <span className="w-2 h-2 rounded-sm bg-neutral-700 inline-block" />
@@ -265,13 +258,8 @@ function AccountCard({ user }: { user: IUserResponse }) {
   );
 }
 
-function QuickActions() {
-  const actions = [
-    { icon: <Plus className="w-3.5 h-3.5 text-emerald-400" />, label: "Generate new resume", href: "/dashboard/resumes/new" },
-    { icon: <Bot className="w-3.5 h-3.5 text-indigo-400" />, label: "Set up auto-apply", href: "/dashboard/auto-apply" },
-    { icon: <CreditCard className="w-3.5 h-3.5 text-amber-400" />, label: "Buy more credits", href: "/dashboard/billing" },
-    { icon: <Briefcase className="w-3.5 h-3.5 text-sky-400" />, label: "Browse job listings", href: "/dashboard/jobs" },
-  ];
+function QuickActions({ user }: { user: IUserResponse }) {
+  const recentJobs = (user.appliedJobs ?? []).slice(0, 5);
 
   return (
     <motion.div
@@ -280,19 +268,30 @@ function QuickActions() {
       transition={{ delay: 0.3, duration: 0.4 }}
       className="bg-[#141416] border border-neutral-800 rounded-2xl p-5"
     >
-      <p className="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-3">Quick actions</p>
-      {/* <div className="flex flex-col gap-1">
-        {actions.map(({ icon, label, href }) => (
-          
-            key={label}
-            href={href}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs text-neutral-300 hover:bg-neutral-800/60 hover:text-white transition-colors"
-          >
-            {icon}
-            {label}
-          </a>
-        ))}
-      </div> */}
+      <p className="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-3">Recently Applied Jobs</p>
+      {recentJobs.length === 0 ? (
+        <p className="text-xs text-neutral-500">No applications yet</p>
+      ) : (
+        <div className="flex flex-col divide-y divide-neutral-800">
+          {recentJobs.map((job, i) => (
+            <a
+              key={i}
+              href={job.jobUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between py-2.5 hover:bg-neutral-800/40 rounded-lg px-2 -mx-2 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Briefcase className="w-3.5 h-3.5 text-sky-400" />
+                <span className="text-xs text-neutral-300 truncate max-w-[140px]">{job.jobTitle}</span>
+              </div>
+              <span className="text-[10px] text-neutral-500">
+                {new Date(job.appliedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+              </span>
+            </a>
+          ))}
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -324,37 +323,34 @@ export default function DashboardMetrics({ user }: { user: IUserResponse | null 
         <StatCard
           label="Total credits"
           value={user.totalCredits}
-          max={CREDIT_MAX}
           icon={<CreditCard className="w-5 h-5 text-sky-400" />}
           barColor="#38bdf8"
-          badge={user.plan}
+          badge={(user.plan).toUpperCase()}
         />
         <StatCard
           label="Resumes generated"
           value={user.resumeCount}
-          max={RESUME_MAX}
           icon={<FileText className="w-5 h-5 text-emerald-400" />}
           barColor="#10b981"
-          delta="+3 this week"
+          // delta="+3 this week"
         />
         <StatCard
           label="Auto-applies"
           value={user.autoApplyCount}
-          max={AUTO_MAX}
           icon={<Bot className="w-5 h-5 text-indigo-400" />}
           barColor="#818cf8"
-          delta="+12 this week"
+          // delta="+12 this week"
         />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <ActivityChart />
-        <CreditDonut credits={user.totalCredits} />
+        <CreditDonut credits={user.totalCredits} creditsUsed={user.creditsUsed} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <AccountCard user={user} />
-        <QuickActions />
+        <QuickActions user={user} />
       </div>
     </div>
   );
