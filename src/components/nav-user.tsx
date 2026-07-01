@@ -21,7 +21,9 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { IUserResponse } from "@/interface/response/user.response"
+import authService from "@/service/auth.service"
 import { ChevronsUpDownIcon, SparklesIcon, BadgeCheckIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
+import Link from "next/link"
 
 export function NavUser({
   user,
@@ -72,8 +74,11 @@ export function NavUser({
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <SparklesIcon
+
                 />
-                Upgrade to Pro
+                <Link href="/#pricing" className="flex items-center gap-2">
+                  Upgrade to Pro
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
@@ -98,7 +103,13 @@ export function NavUser({
             <DropdownMenuItem>
               <LogOutIcon
               />
-              Log out
+              <button
+                onClick={async () => await authService.logout()}
+                className="flex items-center gap-2"
+              >
+
+                Log out
+              </button>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

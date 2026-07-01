@@ -1,11 +1,19 @@
 "use client";
-import React from 'react';
+import { useEffect } from 'react';
 import Image from 'next/image';
 import { FcGoogle } from 'react-icons/fc';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 import authService, { authProvider } from "@/service/auth.service";
 
 export default function LoginPage() {
+  const router = useRouter();
+  
+  useEffect(() => {
+    if (localStorage.getItem("accessToken")) {
+      router.push("/dashboard");
+    }
+  }, []);
   const handleGoogleLogin = async () => {
     try {
       await authService.login(authProvider.GOOGLE);
@@ -32,7 +40,7 @@ export default function LoginPage() {
               className="object-contain w-full h-full"
               priority
             />
-            </div>
+          </div>
 
           <h1 className="text-3xl font-bold mb-2 tracking-tight text-text-primary">Welcome Back</h1>
           <p className="text-text-secondary text-sm  max-w-70">

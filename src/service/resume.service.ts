@@ -68,7 +68,9 @@ class ResumeService {
 
   async updateResumeHtml(id: string, html: string): Promise<IResumeResponse> {
     try {
-      const response = await axiosInstance.put(`/v2/resumes/finalBuild`, { html });
+      const response = await axiosInstance.put(`/v2/resumes/finalBuild`,
+        {htmlData:html}
+      );
       toast.success("Resume updated and PDF generated");
       return response.data;
     } catch (error) {

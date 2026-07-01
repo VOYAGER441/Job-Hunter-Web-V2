@@ -23,210 +23,11 @@ import userService from "@/service/user.service";
 import resumeService from "@/service/resume.service";
 import { FileTextIcon } from "lucide-react";
 import { format } from "date-fns";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Underline from "@tiptap/extension-underline";
-import Link from "@tiptap/extension-link";
-import TextAlign from "@tiptap/extension-text-align";
+import { Document, Page } from 'react-pdf';
 
-// ── Toolbar ────────────────────────────────────────────────────────────────────
+// ── Preview Modal ─────────────────────────────────────────────────────────────
 
-function ToolbarButton({
-  onClick,
-  active,
-  title,
-  children,
-}: {
-  onClick: () => void;
-  active?: boolean;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      title={title}
-      onClick={onClick}
-      className={`px-2 py-1 rounded text-sm font-medium transition-colors ${
-        active
-          ? "bg-primary text-primary-foreground"
-          : "hover:bg-accent text-foreground"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-function EditorToolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
-  if (!editor) return null;
-
-  const setLink = () => {
-    const url = window.prompt("Enter URL");
-    if (url) editor.chain().focus().setLink({ href: url }).run();
-  };
-
-  return (
-    <div className="flex flex-wrap gap-1 p-2 border-b bg-muted/40">
-      {/* Text style */}
-      <ToolbarButton
-        title="Bold"
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        active={editor.isActive("bold")}
-      >
-        <strong>B</strong>
-      </ToolbarButton>
-      <ToolbarButton
-        title="Italic"
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        active={editor.isActive("italic")}
-      >
-        <em>I</em>
-      </ToolbarButton>
-      <ToolbarButton
-        title="Underline"
-        onClick={() => editor.chain().focus().toggleUnderline().run()}
-        active={editor.isActive("underline")}
-      >
-        <span className="underline">U</span>
-      </ToolbarButton>
-
-      <div className="w-px bg-border mx-1 self-stretch" />
-
-      {/* Headings */}
-      <ToolbarButton
-        title="Heading 1"
-        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-        active={editor.isActive("heading", { level: 1 })}
-      >
-        H1
-      </ToolbarButton>
-      <ToolbarButton
-        title="Heading 2"
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        active={editor.isActive("heading", { level: 2 })}
-      >
-        H2
-      </ToolbarButton>
-      <ToolbarButton
-        title="Heading 3"
-        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-        active={editor.isActive("heading", { level: 3 })}
-      >
-        H3
-      </ToolbarButton>
-      <ToolbarButton
-        title="Normal text"
-        onClick={() => editor.chain().focus().setParagraph().run()}
-        active={editor.isActive("paragraph")}
-      >
-        ¶
-      </ToolbarButton>
-
-      <div className="w-px bg-border mx-1 self-stretch" />
-
-      {/* Lists */}
-      <ToolbarButton
-        title="Bullet list"
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        active={editor.isActive("bulletList")}
-      >
-        • List
-      </ToolbarButton>
-      <ToolbarButton
-        title="Numbered list"
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        active={editor.isActive("orderedList")}
-      >
-        1. List
-      </ToolbarButton>
-
-      <div className="w-px bg-border mx-1 self-stretch" />
-
-      {/* Alignment */}
-      <ToolbarButton
-        title="Align left"
-        onClick={() => editor.chain().focus().setTextAlign("left").run()}
-        active={editor.isActive({ textAlign: "left" })}
-      >
-        ←
-      </ToolbarButton>
-      <ToolbarButton
-        title="Align center"
-        onClick={() => editor.chain().focus().setTextAlign("center").run()}
-        active={editor.isActive({ textAlign: "center" })}
-      >
-        ≡
-      </ToolbarButton>
-      <ToolbarButton
-        title="Align right"
-        onClick={() => editor.chain().focus().setTextAlign("right").run()}
-        active={editor.isActive({ textAlign: "right" })}
-      >
-        →
-      </ToolbarButton>
-
-      <div className="w-px bg-border mx-1 self-stretch" />
-
-      {/* Link & HR */}
-      <ToolbarButton title="Add link" onClick={setLink}>
-        🔗
-      </ToolbarButton>
-      <ToolbarButton
-        title="Horizontal rule"
-        onClick={() => editor.chain().focus().setHorizontalRule().run()}
-      >
-        ─
-      </ToolbarButton>
-
-      <div className="w-px bg-border mx-1 self-stretch" />
-
-      {/* History */}
-      <ToolbarButton
-        title="Undo"
-        onClick={() => editor.chain().focus().undo().run()}
-      >
-        ↩
-      </ToolbarButton>
-      <ToolbarButton
-        title="Redo"
-        onClick={() => editor.chain().focus().redo().run()}
-      >
-        ↪
-      </ToolbarButton>
-    </div>
-  );
-}
-
-// ── Live Preview ───────────────────────────────────────────────────────────────
-
-function HtmlPreview({ html }: { html: string }) {
-  // Use srcdoc so the iframe renders the full HTML with its own styles isolated
-  const srcdoc = `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="utf-8"/>
-        <style>
-          body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; }
-        </style>
-      </head>
-      <body>${html}</body>
-    </html>
-  `;
-  return (
-    <iframe
-      srcDoc={srcdoc}
-      className="w-full h-full border-0"
-      title="Resume Preview"
-      sandbox="allow-same-origin"
-    />
-  );
-}
-
-// ── Editor Modal ───────────────────────────────────────────────────────────────
-
-function ResumeEditorModal({
+function ResumePreviewModal({
   initialHtml,
   onSave,
   onCancel,
@@ -236,27 +37,12 @@ function ResumeEditorModal({
   onCancel: () => void;
 }) {
   const [saving, setSaving] = useState(false);
-  const [previewHtml, setPreviewHtml] = useState(initialHtml);
-
-  // Key trick: re-mount editor when initialHtml changes so setContent is called fresh
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Underline,
-      Link.configure({ openOnClick: false }),
-      TextAlign.configure({ types: ["heading", "paragraph"] }),
-    ],
-    content: initialHtml,          // ← set once at mount, no useEffect needed
-    onUpdate: ({ editor }) => {
-      setPreviewHtml(editor.getHTML());
-    },
-  });
+  const [html, setHtml] = useState(initialHtml);
 
   const handleSave = async () => {
-    if (!editor) return;
     setSaving(true);
     try {
-      await onSave(editor.getHTML());
+      await onSave(html);
     } finally {
       setSaving(false);
     }
@@ -267,9 +53,9 @@ function ResumeEditorModal({
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-3 border-b shrink-0">
         <div>
-          <h2 className="text-lg font-semibold">Edit Resume</h2>
+          <h2 className="text-lg font-semibold">Resume Preview</h2>
           <p className="text-xs text-muted-foreground">
-            Use the toolbar to format text — no HTML knowledge needed
+            Review your resume or edit the HTML source directly
           </p>
         </div>
         <div className="flex gap-3">
@@ -291,29 +77,33 @@ function ResumeEditorModal({
         </div>
       </header>
 
-      {/* Split pane */}
+      {/* Split pane — editor left, preview right */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left — rich text editor */}
+        {/* Left — HTML source editor */}
         <div className="w-1/2 border-r flex flex-col overflow-hidden">
-          <div className="text-xs font-medium text-muted-foreground px-4 py-2 border-b bg-muted/20">
-            ✏️ Editor
+          <div className="text-xs font-medium text-muted-foreground px-4 py-2 border-b bg-muted/20 shrink-0">
+            HTML Source
           </div>
-          <EditorToolbar editor={editor} />
-          <div className="flex-1 overflow-auto p-4">
-            <EditorContent
-              editor={editor}
-              className="prose prose-sm max-w-none min-h-full focus:outline-none [&_.ProseMirror]:min-h-[600px] [&_.ProseMirror]:outline-none"
-            />
-          </div>
+          <textarea
+            value={html}
+            onChange={(e) => setHtml(e.target.value)}
+            className="flex-1 p-4 font-mono text-xs leading-relaxed border-0 resize-none focus:outline-none bg-muted/30"
+            spellCheck={false}
+          />
         </div>
 
         {/* Right — live preview */}
         <div className="w-1/2 flex flex-col overflow-hidden">
-          <div className="text-xs font-medium text-muted-foreground px-4 py-2 border-b bg-muted/20">
-            👁 Live Preview
+          <div className="text-xs font-medium text-muted-foreground px-4 py-2 border-b bg-muted/20 shrink-0">
+            Live Preview
           </div>
           <div className="flex-1 bg-gray-50 overflow-hidden">
-            <HtmlPreview html={previewHtml} />
+            <iframe
+              srcDoc={html}
+              className="w-full h-full border-0"
+              title="Resume Preview"
+              sandbox="allow-same-origin"
+            />
           </div>
         </div>
       </div>
@@ -353,7 +143,6 @@ export default function ResumeBuilderPage() {
     setBuildingAI(true);
     try {
       const html = await resumeService.buildWithAI(selectedResume.id);
-      console.log("RAW RESULT:", html, typeof html);
       setHtmlContent(html);
       setIsEditingHtml(true);
     } catch (error) {
@@ -478,9 +267,9 @@ export default function ResumeBuilderPage() {
         </SidebarInset>
       </SidebarProvider>
 
-      {/* Editor modal — re-mounts fresh each time via key */}
+      {/* Preview modal — passes AI HTML directly to backend */}
       {isEditingHtml && (
-        <ResumeEditorModal
+        <ResumePreviewModal
           key={htmlContent}
           initialHtml={htmlContent}
           onSave={handleSaveHtml}

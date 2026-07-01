@@ -122,6 +122,22 @@ class AuthService {
         localStorage.setItem('accessToken', tokens.accessToken);
         localStorage.setItem('refreshToken', tokens.refreshToken);
     }
+
+    async logout() {
+        try {
+            console.log("Logout initiated");
+            
+            await account.deleteSession("current");
+        } catch (error) {
+            console.warn("Appwrite session deletion failed (likely already invalid):", error);
+        } finally {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            if (window.location.pathname !== "/login") {
+                window.location.href = "/login";
+            }
+        }
+    }
 }
 
 const authService = new AuthService();
