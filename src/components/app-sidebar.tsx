@@ -53,8 +53,8 @@ const data = {
       isActive: isCurrentPath("/auto-apply"),
       icon: <BrainCircuit />,
       items: [
-        { title: "My Jobs", url: "", isActive: isCurrentPath("/auto-apply/my-jobs") },
-        { title: "Any Job Link", url: "#", isActive: isCurrentPath("/auto-apply/any-job-link") },
+        { title: "My Jobs", url: "/auto-apply/my-jobs", isActive: isCurrentPath("/auto-apply/my-jobs") },
+        { title: "Any Job Link", url: "/auto-apply/any-job-link", isActive: isCurrentPath("/auto-apply/any-job-link") },
       ],
     },
     // {
@@ -68,11 +68,12 @@ const data = {
     // },
     {
       title: "Plan & Billing",
-      url: "#",
+      url: "/plan-billing",
       isActive: isCurrentPath("/plan-billing"),
       icon: <Receipt />,
       items: [
-        { title: "General", url: "#", isActive: isCurrentPath("/plan-billing/general") }
+        { title: "Buy Credits", url: "/plan-billing", isActive: isCurrentPath("/plan-billing") },
+        { title: "Billing Overview", url: "/plan-billing/general", isActive: isCurrentPath("/plan-billing/general") }
       ],
     },
   ],

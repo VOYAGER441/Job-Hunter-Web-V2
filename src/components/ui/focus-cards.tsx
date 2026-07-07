@@ -1,23 +1,24 @@
-// components/ui/focus-cards.tsx
 "use client";
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { PricingPlan } from "@/interface/response/product.response";
 
+interface FocusCardProps {
+  plan: PricingPlan;
+  index: number;
+  hovered: number | null;
+  setHovered: React.Dispatch<React.SetStateAction<number | null>>;
+  onBuy?: (sku: string) => void;
+}
 
-// components/ui/focus-cards.tsx
 export const FocusCard = React.memo(
   ({
     plan,
     index,
     hovered,
     setHovered,
-  }: {
-    plan: PricingPlan;
-    index: number;
-    hovered: number | null;
-    setHovered: React.Dispatch<React.SetStateAction<number | null>>;
-  }) => (
+    onBuy,
+  }: FocusCardProps) => (
     <div
       onMouseEnter={() => setHovered(index)}
       onMouseLeave={() => setHovered(null)}
@@ -30,9 +31,9 @@ export const FocusCard = React.memo(
       )}
     >
       {plan.highlighted && (
-          <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-accent text-accent-hover text-xs font-semibold px-3 py-1 rounded-full z-10 whitespace-nowrap">
-            Most popular
-          </span>
+        <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-accent text-white text-xs font-semibold px-3 py-1 rounded-full z-10 whitespace-nowrap">
+          Most popular
+        </span>
       )}
 
       <div className={plan.highlighted ? "mt-2" : ""}>
@@ -59,6 +60,7 @@ export const FocusCard = React.memo(
 
       <button
         type="button"
+        onClick={() => onBuy?.(plan.sku)}
         className={cn(
           "w-full mt-6 py-3 rounded-full transition border font-medium",
           plan.highlighted
@@ -73,14 +75,19 @@ export const FocusCard = React.memo(
 );
 FocusCard.displayName = "FocusCard";
 
-export function FocusCards({ plans }: { plans: PricingPlan[] }) {
+interface FocusCardsProps {
+  plans: PricingPlan[];
+  onBuy?: (sku: string) => void;
+}
+
+export function FocusCards({ plans, onBuy }: FocusCardsProps) {
   const [hovered, setHovered] = useState<number | null>(null);
 
   return (
-    <div className="flex flex-nowrap items-stretch gap-8 ">
+    <div className="flex flex-nowrap items-stretch gap-8">
       {plans.map((plan, index) => (
-        <div key={plan.name} className="flex-1 min-w-[300px] flex">
-          <FocusCard plan={plan} index={index} hovered={hovered} setHovered={setHovered} />
+        <div key={plan.sku} className="flex-1 min-w-[300px] flex">
+          <FocusCard plan={plan} index={index} hovered={hovered} setHovered={setHovered} onBuy={onBuy} />
         </div>
       ))}
     </div>

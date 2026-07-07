@@ -1,20 +1,38 @@
 "use client";
+import { useState, useEffect } from "react";
 import Silk from "@/components/Silk";
 import { useRouter } from "next/navigation";
 import CardNav, { CardNavItem } from "@/components/CardNav";
 import ScrambledText from "@/components/ScrambledText";
 import RotatingText from "@/components/RotatingText";
 import ClickSpark from "@/components/ClickSpark";
-import CardSwap, { Card } from "@/components/CardSwap";
 import PricingCard from "@/components/PricingCard";
 import FeatureCardSwap from "@/components/FeatureCardSwap";
+import userService from "@/service/user.service";
 
 export default function Home() {
-  const router = useRouter()
-  const handleAnimationComplete = () => {
-    console.log('All letters have animated!');
-  };
+  const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        await userService.currentUser();
+        setIsLoggedIn(true);
+      } catch {
+        setIsLoggedIn(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  const handleBuy = (sku: string) => {
+    if (isLoggedIn) {
+      router.push("/plan-billing");
+    } else {
+      router.push("/login");
+    }
+  };
 
   const navItems: CardNavItem[] = [
     {
@@ -91,7 +109,7 @@ export default function Home() {
               className="relative z-10 rounded-full px-8 py-3 bg-card text-text-disabled font-semibold shadow-lg hover:bg-gray-200 transition focus:outline-none focus:ring-4 focus:ring-white/30 text-black"
               onClick={() => router.push('/dashboard')}
             >
-              Get Started — It's Free
+              Get Started — It&apos;s Free
             </button>
           </div>
 
@@ -100,7 +118,6 @@ export default function Home() {
               <h2 className="text-3xl md:text-5xl font-bold text-text-primary mb-4">Features</h2>
               <p className="text-text-primary/70 max-w-lg mx-auto">Discover the powerful features that make Job Hunter V2 the ultimate job search companion.</p>
             </div>
-            {/* Three feature cards as simple placeholders */}
             <FeatureCardSwap />
           </div>
 
@@ -111,7 +128,7 @@ export default function Home() {
               <p className="text-text-primary/70 max-w-lg mx-auto">Choose the perfect plan to accelerate your job hunt.</p>
             </div>
 
-            <PricingCard />
+            <PricingCard onBuy={handleBuy} />
           </div>
         </main>
       </div>
