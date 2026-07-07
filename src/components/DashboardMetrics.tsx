@@ -319,7 +319,7 @@ export default function DashboardMetrics({ user }: { user: IUserResponse | null 
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <StatCard
           label="Total credits"
           value={user.totalCredits}
@@ -328,18 +328,22 @@ export default function DashboardMetrics({ user }: { user: IUserResponse | null 
           badge={(user.plan).toUpperCase()}
         />
         <StatCard
+          label="Remaining credits"
+          value={(user.totalCredits || 0) - (user.creditsUsed || 0)}
+          icon={<CreditCard className="w-5 h-5 text-emerald-400" />}
+          barColor="#10b981"
+        />
+        <StatCard
           label="Resumes generated"
           value={user.resumeCount}
-          icon={<FileText className="w-5 h-5 text-emerald-400" />}
-          barColor="#10b981"
-          // delta="+3 this week"
+          icon={<FileText className="w-5 h-5 text-violet-400" />}
+          barColor="#8b5cf6"
         />
         <StatCard
           label="Auto-applies"
           value={user.autoApplyCount}
           icon={<Bot className="w-5 h-5 text-indigo-400" />}
           barColor="#818cf8"
-          // delta="+12 this week"
         />
       </div>
 

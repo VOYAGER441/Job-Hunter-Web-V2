@@ -45,12 +45,12 @@ export default function Home() {
       ]
     },
     {
-      label: 'Integrations',
+      label: 'Resources',
       bgColor: '#1C1C1F',
       textColor: '#FAFAFA',
       links: [
-        { label: 'API', href: '#api', ariaLabel: 'API' },
-        { label: 'Partners', href: '#partners', ariaLabel: 'Partners' }
+        { label: 'FAQ', href: '/faq', ariaLabel: 'FAQ' },
+        { label: 'Contact', href: '/contact-us', ariaLabel: 'Contact Us' }
       ]
     },
     {
@@ -58,7 +58,7 @@ export default function Home() {
       bgColor: '#1C1C1F',
       textColor: '#FAFAFA',
       links: [
-        { label: 'About', href: '#about', ariaLabel: 'About' },
+        { label: 'About', href: '/about-us', ariaLabel: 'About Us' },
         { label: 'Careers', href: '#careers', ariaLabel: 'Careers' }
       ]
     }
@@ -75,7 +75,7 @@ export default function Home() {
         <CardNav logo="/only_logo.png" items={navItems} baseColor="rgba(255, 255, 255, 0.1)" menuColor="#FAFAFA" buttonBgColor="#FAFAFA" buttonTextColor="#0A0A0B" />
 
         {/* Hero */}
-        <main className="relative z-10 flex flex-col items-center justify-center w-full max-w-4xl mx-auto py-28 px-6 text-center top-5">
+        <main className="relative z-10 flex flex-col items-center justify-center w-full max-w-4xl mx-auto py-28 px-6 text-center top-5 pb-0">
 
           <div className="relative top-10  w-full h-40 rounded-full " >
 
@@ -130,6 +130,51 @@ export default function Home() {
 
             <PricingCard onBuy={handleBuy} />
           </div>
+
+          {/* Footer */}
+          <footer className="w-full border-t border-white/10 mt-20 pt-12 pb-8">
+            <div className="max-w-6xl mx-auto px-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+                <div>
+                  <h3 className="font-semibold text-text-primary mb-4">Products</h3>
+                  <ul className="space-y-2 text-text-secondary">
+                    <li><a href="#overview" className="hover:text-white transition-colors">Overview</a></li>
+                    <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-text-primary mb-4">Resources</h3>
+                  <ul className="space-y-2 text-text-secondary">
+                    <li><a href="/faq" className="hover:text-white transition-colors">FAQ</a></li>
+                    <li><a href="/contact-us" className="hover:text-white transition-colors">Contact Us</a></li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-text-primary mb-4">Company</h3>
+                  <ul className="space-y-2 text-text-secondary">
+                    <li><a href="/about-us" className="hover:text-white transition-colors">About Us</a></li>
+                    <li><a href="#careers" className="hover:text-white transition-colors">Careers</a></li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-text-primary mb-4">Legal</h3>
+                  <ul className="space-y-2 text-text-secondary">
+                    <li><a href="/terms-conditions" className="hover:text-white transition-colors">Terms & Conditions</a></li>
+                    <li><a href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                  </ul>
+                </div>
+              </div>
+              <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <img src="/only_logo.png" alt="Logo" className="w-8 h-8 rounded-full" />
+                  <span className="font-semibold text-text-primary">Job Hunter</span>
+                </div>
+                <p className="text-text-secondary text-sm">
+                  © 2026 Job Hunter. All rights reserved.
+                </p>
+              </div>
+            </div>
+          </footer>
         </main>
       </div>
     </ClickSpark>
