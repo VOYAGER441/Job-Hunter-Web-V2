@@ -8,22 +8,14 @@ import RotatingText from "@/components/RotatingText";
 import ClickSpark from "@/components/ClickSpark";
 import PricingCard from "@/components/PricingCard";
 import FeatureCardSwap from "@/components/FeatureCardSwap";
-import userService from "@/service/user.service";
 
 export default function Home() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        await userService.currentUser();
-        setIsLoggedIn(true);
-      } catch {
-        setIsLoggedIn(false);
-      }
-    };
-    checkAuth();
+    const token = localStorage.getItem("accessToken");
+    setIsLoggedIn(!!token);
   }, []);
 
   const handleBuy = (sku: string) => {
